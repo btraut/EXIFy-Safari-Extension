@@ -3,6 +3,8 @@ var EXIFy = {
 		safari.self.addEventListener('message', EXIFy._onMessage, false);
 		document.addEventListener('contextmenu', EXIFy._onContextMenu, false);
 		
+		EXIFy._images = [];
+		
 		EXIFy._$mask = $('<div id="EXIFy-mask"></div>');
 		EXIFy._$lightbox = $('<div id="EXIFy-lightbox"><img /><section><h1>EXIF Data</h1><ul></ul></section></div>').appendTo(EXIFy._$mask);
 		
@@ -63,6 +65,8 @@ var EXIFy = {
 	},
 	
 	_enabled: false,
+	
+	_images: null,
 
 	_$mask: null,
 	_$lightbox: null,
@@ -127,6 +131,7 @@ var EXIFy = {
 		var imgId = EXIFy._images.length;
 		EXIFy._images[imgId] = {
 			img: img,
+			src: img.src,
 			callback: callback
 		};
 		
@@ -145,9 +150,10 @@ var EXIFy = {
 		
 		EXIFy._images[id] = null;
 	},
-	_images: [],
 	_onImageLoadFailed: function(id) {
 		EXIFy._images[id] = null;
+		
+		console.log('EXIFy: There was a failure while loading image data.');
 	},
 	_onToggleEXIFy: function() {
 		if (EXIFy._enabled) {
@@ -177,4 +183,6 @@ var EXIFy = {
 	}
 };
 
-EXIFy.init();
+$(function() {
+	EXIFy.init();
+});
