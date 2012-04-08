@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Author</key>
+	<string>Brent Traut</string>
+	<key>Builder Version</key>
+	<string>7534.55.3</string>
+	<key>CFBundleDisplayName</key>
+	<string>EXIFy</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.btraut.exify</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>Chrome</key>
+	<dict>
+		<key>Global Page</key>
+		<string>global.html</string>
+	</dict>
+	<key>Content</key>
+	<dict>
+		<key>Scripts</key>
+		<dict>
+			<key>End</key>
+			<array>
+				<string>jquery-1.7.2.min.js</string>
+				<string>binaryajax.js</string>
+				<string>exif.js</string>
+				<string>exify.js</string>
+			</array>
+		</dict>
+		<key>Stylesheets</key>
+		<array>
+			<string>exify.css</string>
+		</array>
+	</dict>
+	<key>Description</key>
+	<string>View EXIF data on any image.</string>
+	<key>ExtensionInfoDictionaryVersion</key>
+	<string>1.0</string>
+	<key>Permissions</key>
+	<dict>
+		<key>Website Access</key>
+		<dict>
+			<key>Include Secure Pages</key>
+			<true/>
+			<key>Level</key>
+			<string>All</string>
+		</dict>
+	</dict>
+	<key>Update Manifest URL</key>
+	<string>http://btraut.com/labs/exify/versions.plist</string>
+	<key>Website</key>
+	<string>http://btraut.com/labs/exify</string>
+</dict>
+</plist>

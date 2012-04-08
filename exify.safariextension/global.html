@@ -1,0 +1,84 @@
+<script>
+	
+	EXIFyGlobal = {
+		init: function() {
+			safari.application.addEventListener('message', EXIFyGlobal._onMessage, false);
+			safari.application.addEventListener('command', EXIFyGlobal._onCommand, false);
+			safari.application.addEventListener('contextmenu', EXIFyGlobal._onContextMenu, false);
+		},
+		_onCommand: function(event) {
+			switch (event.command) {
+				case 'toggleEXIFy': return EXIFyGlobal._onToggleEXIFy();
+				case 'viewEXIFData': return EXIFyGlobal._onContextMenuViewEXIFData();
+			}
+		},
+		_onToggleEXIFy: function() {
+			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('toggleEXIFy');
+		},
+		_onContextMenuViewEXIFData: function(event) {
+			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('contextMenuViewEXIFData');
+		},
+		_onMessage: function(event) {
+			switch (event.name) {
+				case 'imageDataRequested': return EXIFyGlobal._onImageDataRequested(event.message.url, event.message.id);
+			}
+		},
+		_onImageDataRequested: function(url, id) {
+			EXIFyGlobal._sendRequest(url, function(data) {
+				EXIFyGlobal._sendImageDataMessage(id, data);
+			}, function() {
+				EXIFyGlobal._sendImageLoadFailedMessage(id);
+			});
+		},
+		_sendImageDataMessage: function(id, data) {
+			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('imageDataLoaded', {
+				id: id,
+				data: data
+			});
+		},
+		_sendImageLoadFailedMessage: function(id) {
+			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('imageLoadFailed', {
+				id: id,
+				data: data
+			});
+		},
+		
+		_sendRequest: function(url, success, failure) {
+			var xhr = new XMLHttpRequest();
+			
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState == 4) {
+					if (xhr.status == '200' || xhr.status == '206' || xhr.status == '0') {
+						success(xhr.responseText);
+					} else {
+						if (failure) {
+							failure();
+						}
+					}
+					
+					xhr = null;
+				}
+			};
+			
+			xhr.open('GET', url, true);
+
+			if (xhr.overrideMimeType) {
+				xhr.overrideMimeType('text/plain; charset=x-user-defined');
+			}
+
+			xhr.setRequestHeader('If-Modified-Since', 'Sat, 1 Jan 1970 00:00:00 GMT');
+
+			xhr.send(null);
+		},
+		_onContextMenu: function(event) {
+			event.contextMenu.appendContextMenuItem('toggleEXIFy', 'EXIFy: ' + (event.userInfo.clickEventsEnabled ? 'Disable' : 'Enable') + ' "Click to View"');
+			
+			if (event.userInfo.targetNodeName === 'IMG') {
+				event.contextMenu.appendContextMenuItem('viewEXIFData', 'EXIFy: View EXIF Data');
+			}
+		}
+	};
+	
+	EXIFyGlobal.init();
+	
+</script>
