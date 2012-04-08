@@ -5,16 +5,7 @@ var EXIFy = {
 		
 		EXIFy._images = {};
 		
-		EXIFy._$mask = $('<div id="EXIFy-mask"></div>');
-		EXIFy._$lightbox = $('<div id="EXIFy-lightbox"><img /><section><h1>EXIF Data</h1><ul></ul></section></div>').appendTo(EXIFy._$mask);
-		
-		EXIFy._$mask.click(function(evt) {
-			if (evt.target.id !== 'EXIFy-lightbox' && $(evt.target).parents('#EXIFy-lightbox').length === 0) {
-				EXIFy._hideMask();
-			}
-		});
-		
-		safari.self.tab.dispatchMessage('iframeIdRequested');
+		EXIFy._$iframe = $('<iframe id="EXIFy-iframe"></iframe>');
 	},
 	
 	enableClickEvents: function() {
@@ -58,8 +49,6 @@ var EXIFy = {
 		
 		EXIFy._enabled = false;
 		
-		EXIFy._$mask.detach();
-		
 		$('img')
 			.unbind('mouseover.EXIFy')
 			.unbind('mouseout.EXIFy')
@@ -71,59 +60,80 @@ var EXIFy = {
 	_current: 1,
 	_images: null,
 
-	_$mask: null,
-	_$lightbox: null,
+	_$iframe: null,
 	
 	_$contextMenuTarget: null,
 	
 	_showMask: function(img) {
-		$('img', EXIFy._$lightbox).attr({'src':img.src, 'title':img.title});
-		
-		var $ul = $('ul', EXIFy._$lightbox).html('').append($('<li><em>Loading...</em></li>'));
-		
-		EXIFy._loadImageData(img, function() {
-			var tags = EXIF.getAllTags(img);
-			var totalTags = 0;
-			
-			$ul.html('');
-			
-			for (var key in tags) {
-				tags[key] = $.trim(tags[key]);
-				
-				if (tags[key] !== '') {
-					++totalTags;
-					$('<li><span>' + key + '</span>: ' + tags[key] + '</li>').appendTo($ul);
-				}
-			}
-			
-			if (totalTags === 0) {
-				$('<li><em>No data available!</em></li>').appendTo($ul);
-			}
-		});
-		
-		EXIFy._$mask.appendTo(document.body);
-		
 		var $body = $(document.body);
 		
 		$body
-			.bind('keypress.EXIFy', function(evt) {
-				if (evt.keyCode === 27) {
-					EXIFy._hideMask();
-				}
-				
-				evt.stopPropagation();
-			})
+			// .bind('keypress.EXIFy', function(evt) {
+			// 	if (evt.keyCode === 27) {
+			// 		EXIFy._hideMask();
+			// 	}
+			// })
 			.data('previous-overflow', $body.css('overflow'))
 			.css('overflow', 'hidden');
+		
+		EXIFy._$iframe.appendTo(document.body);
+		
+		setTimeout(function() {
+			var iframeDoc = EXIFy._$iframe[0].contentDocument;
+			var $iframeBody = $(iframeDoc.body).attr('id', 'EXIFy-iframe-body');
+			
+			var mask = iframeDoc.createElement('div');
+			var $mask = $(mask).attr('id', 'EXIFy-mask').appendTo($iframeBody);
+			
+			var lightbox = iframeDoc.createElement('div');
+			var $lightbox = $(mask).attr('id', 'EXIFy-lightbox').html('<img /><section><h1>EXIF Data</h1><ul></ul></section>').appendTo($iframeBody);
+			
+			// var closeButton = iframeDoc.createElement('a');
+			// var $closeButton = $(closeButton).attr('id', 'EXIFy-close-button').html('Close EXIFy').appendTo($lightbox);
+			
+			$iframeBody.click(function(evt) {
+				if (evt.target.id !== 'EXIFy-lightbox' && $(evt.target).parents('#EXIFy-lightbox').length === 0) {
+					EXIFy._hideMask();
+				}
+			});
+			
+			EXIFy._loadImageData(img, function() {
+				var iframeDoc = EXIFy._$iframe[0].contentDocument;
+				var $iframeBody = $(iframeDoc.body);
+							
+				var $ul = $('ul', $iframeBody).html('').append($('<li><em>Loading...</em></li>'));
+				
+				$('img', $iframeBody).attr({'src':img.src, 'title':img.title});
+				
+				var tags = EXIF.getAllTags(img);
+				var totalTags = 0;
+				
+				$ul.html('');
+				
+				for (var key in tags) {
+					tags[key] = $.trim(tags[key]);
+					
+					if (tags[key] !== '') {
+						++totalTags;
+						$('<li><span>' + key + '</span>: ' + tags[key] + '</li>').appendTo($ul);
+					}
+				}
+				
+				if (totalTags === 0) {
+					$('<li><em>No data available!</em></li>').appendTo($ul);
+				}
+			});
+		}, 10);
 	},
 	_hideMask: function() {
+		EXIFy._$iframe.detach();
+		
 		var $body = $(document.body);
+		
 		$body
-			.unbind('keypress.EXIFy')
+			// .unbind('keypress.EXIFy')
 			.css('overflow', $body.data('previous-overflow'))
 			.data('previous-overflow', '');
-
-		EXIFy._$mask.detach();
 	},
 	_loadImageData: function(img, callback) {
 		if (img.exifdata) {

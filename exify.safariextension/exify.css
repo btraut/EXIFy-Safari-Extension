@@ -1,9 +1,14 @@
-#EXIFy-mask { position: fixed !important; left: 0 !important; right: 0 !important; top: 0 !important; bottom: 0 !important; z-index: 9999 !important; background: rgba(0, 0, 0, 0.8) !important; text-align: center !important; }
-#EXIFy-lightbox { display: inline-block !important; margin: 100px 0 20px !important; padding: 20px !important; border-radius: 20px !important; border: 10px solid #444 !important; background: white !important; color: #444 !important; -webkit-font-smoothing: antialiased !important; }
+#EXIFy-iframe { position: fixed !important; left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; z-index: 9999 !important; }
+
+#EXIFy-iframe-body { background: rgba(0, 0, 0, 0.8); text-align: center; font-family: "Helvetica Neue", Helvetica Neue, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+
+#EXIFy-lightbox { position: relative; display: inline-block; margin: 100px 0 20px; padding: 20px; border-radius: 20px; border: 10px solid #444; background: white; color: #444; }
 #EXIFy-lightbox:after { visibility: hidden; display: block; font-size: 0; content: " "; clear: both; height: 0; }
-#EXIFy-lightbox > img { float: left !important; max-width: 400px; box-sizing !important: border-box; border: 4px solid #444 !important; margin-right: 20px !important; }
-#EXIFy-lightbox > section { float: left !important; width: 480px !important; }
-#EXIFy-lightbox > section > h1 { margin: 0 0 10px !important; font-weight: 300 !important; font-size: 36px !important; font-family: "Helvetica Neue",Helvetica Neue,Helvetica,Arial,sans-serif !important; text-align: left !important; line-height: normal !important; }
-#EXIFy-lightbox > section > ul { max-height: 500px !important; margin: 0 !important; padding: 0 !important; list-style: none !important; overflow: auto !important; }
-#EXIFy-lightbox > section > ul > li { margin: 0 0 4px !important; padding: 0 !important; text-align: left !important; background: none !important; font-size: 16px !important; font-family: "Helvetica Neue",Helvetica Neue,Helvetica,Arial,sans-serif !important; line-height: normal !important; }
-#EXIFy-lightbox > section > ul > li > span { font-weight: bold !important; font-family: "Helvetica Neue",Helvetica Neue,Helvetica,Arial,sans-serif !important; }
+#EXIFy-lightbox > img { float: left; max-width: 400px; box-sizing: border-box; border: 4px solid #444; margin-right: 20px; }
+#EXIFy-lightbox > section { float: left; width: 480px; }
+#EXIFy-lightbox > section > h1 { margin: 0 0 10px; font-weight: 300; font-size: 36px; text-align: left; }
+#EXIFy-lightbox > section > ul { max-height: 500px; margin: 0; padding: 0; list-style: none; overflow: auto; }
+#EXIFy-lightbox > section > ul > li { margin: 0 0 4px; padding: 0; font-size: 16px; text-align: left; }
+#EXIFy-lightbox > section > ul > li > span { /*display: inline-block; width: 200px;*/ text-align: right; font-weight: bold; }
+
+/* #EXIFy-close-button { position: absolute; top: -24px; right: -24px; width: 48px; height: 48px; background: url('close.png'); overflow: hidden; text-indent: -9999px; } */
