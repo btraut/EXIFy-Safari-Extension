@@ -3,7 +3,7 @@ var EXIFy = {
 		safari.self.addEventListener('message', EXIFy._onMessage, false);
 		document.addEventListener('contextmenu', EXIFy._onContextMenu, false);
 		
-		EXIFy._images = [];
+		EXIFy._images = {};
 		
 		EXIFy._$mask = $('<div id="EXIFy-mask"></div>');
 		EXIFy._$lightbox = $('<div id="EXIFy-lightbox"><img /><section><h1>EXIF Data</h1><ul></ul></section></div>').appendTo(EXIFy._$mask);
@@ -13,6 +13,8 @@ var EXIFy = {
 				EXIFy._hideMask();
 			}
 		});
+		
+		safari.self.tab.dispatchMessage('iframeIdRequested');
 	},
 	
 	enableClickEvents: function() {
@@ -66,6 +68,7 @@ var EXIFy = {
 	
 	_enabled: false,
 	
+	_current: 1,
 	_images: null,
 
 	_$mask: null,
@@ -128,7 +131,8 @@ var EXIFy = {
 			return;
 		}
 		
-		var imgId = EXIFy._images.length;
+		var imgId = 'img-' + (EXIFy._current++);
+		
 		EXIFy._images[imgId] = {
 			img: img,
 			src: img.src,
@@ -183,6 +187,8 @@ var EXIFy = {
 	}
 };
 
-$(function() {
+// For now, only load EXIFy on the main window. We need to find a way to allow iframes to load EXIFy,
+// but also to prevent all iframes from responding to the same messages coming from the global file.
+if (window.top === window) {
 	EXIFy.init();
-});
+}
