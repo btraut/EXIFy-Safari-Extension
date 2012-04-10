@@ -9,6 +9,8 @@ var EXIFy = {
 	},
 	
 	enableClickEvents: function() {
+		var self = this;
+		
 		if (EXIFy._enabled) {
 			return;
 		}
@@ -17,21 +19,11 @@ var EXIFy = {
 		
 		$('img')
 			.bind('mouseover.EXIFy', function(evt) {
-				var img = $(this);
-				img .data('previous-outline', img.css('outline'))
-					.data('previous-cursor', img.css('cursor'))
-					.css('outline', '3px solid red')
-					.css('cursor', 'pointer');
-					
+				self._highlightImage(this);
 				evt.stopPropagation();
 			})
 			.bind('mouseout.EXIFy', function(evt) {
-				var img = $(this);
-				img .css('outline', img.data('previous-outline'))
-					.css('cursor', img.data('previous-cursor'))
-					.data('previous-outline', '')
-					.data('previous-cursor', '');
-					
+				self._unhighlightImage();
 				evt.stopPropagation();
 			})
 			.bind('click.EXIFy', function(evt) {
@@ -49,16 +41,40 @@ var EXIFy = {
 		
 		EXIFy._enabled = false;
 		
+		this._unhighlightImage();
+		
 		$('img')
 			.unbind('mouseover.EXIFy')
 			.unbind('mouseout.EXIFy')
 			.unbind('click.EXIFy');
 	},
 	
+	_highlightImage: function(img) {
+		this._highlightedImage = img;
+		
+		var $img = $(img);
+		$img .data('previous-outline', $img.css('outline'))
+			.data('previous-cursor', $img.css('cursor'))
+			.css('outline', '3px solid red')
+			.css('cursor', 'pointer');
+	},
+	
+	_unhighlightImage: function() {
+		var $img = $(this._highlightedImage);
+		$img .css('outline', $img.data('previous-outline'))
+			.css('cursor', $img.data('previous-cursor'))
+			.data('previous-outline', '')
+			.data('previous-cursor', '');
+		
+		this._highlightedImage = null;
+	},
+	
 	_enabled: false,
 	
 	_current: 1,
 	_images: null,
+	
+	_highlightedImage: null,
 
 	_$iframe: null,
 	
