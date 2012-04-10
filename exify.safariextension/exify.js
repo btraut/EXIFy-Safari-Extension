@@ -1,21 +1,25 @@
-var EXIFy = {
+var EXIFy = function() {
+	this.init();
+}
+
+EXIFy.prototype = {
 	init: function() {
-		safari.self.addEventListener('message', EXIFy._onMessage, false);
-		document.addEventListener('contextmenu', EXIFy._onContextMenu, false);
+		safari.self.addEventListener('message', $.proxy(this._onMessage, this), false);
+		document.addEventListener('contextmenu', $.proxy(this._onContextMenu, this), false);
 		
-		EXIFy._images = {};
+		this._images = {};
 		
-		EXIFy._$iframe = $('<iframe id="EXIFy-iframe"></iframe>');
+		this._$iframe = $('<iframe id="EXIFy-iframe"></iframe>');
 	},
 	
 	enableClickEvents: function() {
 		var self = this;
 		
-		if (EXIFy._enabled) {
+		if (this._enabled) {
 			return;
 		}
 		
-		EXIFy._enabled = true;
+		this._enabled = true;
 		
 		$('img')
 			.bind('mouseover.EXIFy', function(evt) {
@@ -27,7 +31,7 @@ var EXIFy = {
 				evt.stopPropagation();
 			})
 			.bind('click.EXIFy', function(evt) {
-				EXIFy._showMask(this);
+				self._showMask(this);
 				
 				evt.stopPropagation();
 				evt.preventDefault();
@@ -35,11 +39,11 @@ var EXIFy = {
 	},
 	
 	disableClickEvents: function() {
-		if (!EXIFy._enabled) {
+		if (!this._enabled) {
 			return;
 		}
 		
-		EXIFy._enabled = false;
+		this._enabled = false;
 		
 		this._unhighlightImage();
 		
@@ -81,6 +85,8 @@ var EXIFy = {
 	_$contextMenuTarget: null,
 	
 	_showMask: function(img) {
+		var self = this;
+		
 		var $body = $(document.body);
 		
 		$body
@@ -92,10 +98,10 @@ var EXIFy = {
 			.data('previous-overflow', $body.css('overflow'))
 			.css('overflow', 'hidden');
 		
-		EXIFy._$iframe.appendTo(document.body);
+		this._$iframe.appendTo(document.body);
 		
 		setTimeout(function() {
-			var iframeDoc = EXIFy._$iframe[0].contentDocument;
+			var iframeDoc = self._$iframe[0].contentDocument;
 			var $iframeBody = $(iframeDoc.body).attr('id', 'EXIFy-iframe-body');
 			
 			var mask = iframeDoc.createElement('div');
@@ -109,40 +115,43 @@ var EXIFy = {
 			
 			$iframeBody.click(function(evt) {
 				if (evt.target.id !== 'EXIFy-lightbox' && $(evt.target).parents('#EXIFy-lightbox').length === 0) {
-					EXIFy._hideMask();
+					self._hideMask();
 				}
 			});
 			
-			EXIFy._loadImageData(img, function() {
-				var iframeDoc = EXIFy._$iframe[0].contentDocument;
-				var $iframeBody = $(iframeDoc.body);
-							
-				var $ul = $('ul', $iframeBody).html('').append($('<li><em>Loading...</em></li>'));
-				
-				$('img', $iframeBody).attr({'src':img.src, 'title':img.title});
-				
-				var tags = EXIF.getAllTags(img);
-				var totalTags = 0;
-				
-				$ul.html('');
-				
-				for (var key in tags) {
-					tags[key] = $.trim(tags[key]);
-					
-					if (tags[key] !== '') {
-						++totalTags;
-						$('<li><span>' + key + '</span>: ' + tags[key] + '</li>').appendTo($ul);
-					}
-				}
-				
-				if (totalTags === 0) {
-					$('<li><em>No data available!</em></li>').appendTo($ul);
-				}
+			self._loadImageData(img, function() {
+				self._onLoadImageData(img);
 			});
 		}, 10);
 	},
+	_onLoadImageData: function(img) {
+		var iframeDoc = this._$iframe[0].contentDocument;
+		var $iframeBody = $(iframeDoc.body);
+					
+		var $ul = $('ul', $iframeBody).html('').append($('<li><em>Loading...</em></li>'));
+		
+		$('img', $iframeBody).attr({'src':img.src, 'title':img.title});
+		
+		var tags = EXIF.getAllTags(img);
+		var totalTags = 0;
+		
+		$ul.html('');
+		
+		for (var key in tags) {
+			tags[key] = $.trim(tags[key]);
+			
+			if (tags[key] !== '') {
+				++totalTags;
+				$('<li><span>' + key + '</span>: ' + tags[key] + '</li>').appendTo($ul);
+			}
+		}
+		
+		if (totalTags === 0) {
+			$('<li><em>No data available!</em></li>').appendTo($ul);
+		}
+	},
 	_hideMask: function() {
-		EXIFy._$iframe.detach();
+		this._$iframe.detach();
 		
 		var $body = $(document.body);
 		
@@ -157,9 +166,9 @@ var EXIFy = {
 			return;
 		}
 		
-		var imgId = 'img-' + (EXIFy._current++);
+		var imgId = 'img-' + (this._current++);
 		
-		EXIFy._images[imgId] = {
+		this._images[imgId] = {
 			img: img,
 			src: img.src,
 			callback: callback
@@ -172,49 +181,49 @@ var EXIFy = {
 	},
 	_onImageDataLoaded: function(id, data) {
 		var bin = new BinaryFile(data);
-		var img = EXIFy._images[id].img;
+		var img = this._images[id].img;
 		
 		img.exifdata = EXIF.readFromBinaryFile(bin);
 		
-		EXIFy._images[id].callback();
+		this._images[id].callback();
 		
-		EXIFy._images[id] = null;
+		this._images[id] = null;
 	},
 	_onImageLoadFailed: function(id) {
-		EXIFy._images[id] = null;
+		this._images[id] = null;
 		
 		console.log('EXIFy: There was a failure while loading image data.');
 	},
 	_onToggleEXIFy: function() {
-		if (EXIFy._enabled) {
-			EXIFy.disableClickEvents();
+		if (this._enabled) {
+			this.disableClickEvents();
 		} else {
-			EXIFy.enableClickEvents();
+			this.enableClickEvents();
 		}
 	},
 	_onMessage: function(event) {
 		switch (event.name) {
-			case 'imageDataLoaded': return EXIFy._onImageDataLoaded(event.message.id, event.message.data);
-			case 'imageLoadFailed': return EXIFy._onImageLoadFailed(event.message.id);
-			case 'toggleEXIFy': return EXIFy._onToggleEXIFy();
-			case 'contextMenuViewEXIFData': return EXIFy._onContextMenuViewEXIFData();
+			case 'imageDataLoaded': return this._onImageDataLoaded(event.message.id, event.message.data);
+			case 'imageLoadFailed': return this._onImageLoadFailed(event.message.id);
+			case 'toggleEXIFy': return this._onToggleEXIFy();
+			case 'contextMenuViewEXIFData': return this._onContextMenuViewEXIFData();
 			case 'log': console.log(event.message);
 		}
 	},
 	_onContextMenu: function(event) {
-		EXIFy._$contextMenuTarget = $(event.target);
+		this._$contextMenuTarget = $(event.target);
 		safari.self.tab.setContextMenuEventUserInfo(event, {
 			targetNodeName: event.target.nodeName,
-			clickEventsEnabled: EXIFy._enabled
+			clickEventsEnabled: this._enabled
 		});
 	},
 	_onContextMenuViewEXIFData: function() {
-		EXIFy._showMask(EXIFy._$contextMenuTarget[0]);
+		this._showMask(this._$contextMenuTarget[0]);
 	}
 };
 
 // For now, only load EXIFy on the main window. We need to find a way to allow iframes to load EXIFy,
 // but also to prevent all iframes from responding to the same messages coming from the global file.
 if (window.top === window) {
-	EXIFy.init();
+	var exify = new EXIFy();
 }

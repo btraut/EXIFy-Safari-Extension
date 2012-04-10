@@ -1,15 +1,20 @@
 <script>
 	
-	EXIFyGlobal = {
+	var EXIFyGlobal = function() {
+		this.init();
+	};
+	
+	EXIFyGlobal.prototype = {
 		init: function() {
-			safari.application.addEventListener('message', EXIFyGlobal._onMessage, false);
-			safari.application.addEventListener('command', EXIFyGlobal._onCommand, false);
-			safari.application.addEventListener('contextmenu', EXIFyGlobal._onContextMenu, false);
+			var self = this;
+			safari.application.addEventListener('message', function(evt) { self._onMessage(evt); }, false);
+			safari.application.addEventListener('command', function(evt) { self._onCommand(evt); }, false);
+			safari.application.addEventListener('contextmenu', function(evt) { self._onContextMenu(evt); }, false);
 		},
 		_onCommand: function(event) {
 			switch (event.command) {
-				case 'toggleEXIFy': return EXIFyGlobal._onToggleEXIFy();
-				case 'viewEXIFData': return EXIFyGlobal._onContextMenuViewEXIFData();
+				case 'toggleEXIFy': return this._onToggleEXIFy();
+				case 'viewEXIFData': return this._onContextMenuViewEXIFData();
 			}
 		},
 		_onToggleEXIFy: function() {
@@ -20,14 +25,15 @@
 		},
 		_onMessage: function(event) {
 			switch (event.name) {
-				case 'imageDataRequested': return EXIFyGlobal._onImageDataRequested(event.message.url, event.message.id);
+				case 'imageDataRequested': return this._onImageDataRequested(event.message.url, event.message.id);
 			}
 		},
 		_onImageDataRequested: function(url, id) {
-			EXIFyGlobal._sendRequest(url, function(data) {
-				EXIFyGlobal._sendImageDataMessage(id, data);
+			var self = this;
+			this._sendRequest(url, function(data) {
+				self._sendImageDataMessage(id, data);
 			}, function() {
-				EXIFyGlobal._sendImageLoadFailedMessage(id);
+				self._sendImageLoadFailedMessage(id);
 			});
 		},
 		_sendImageDataMessage: function(id, data) {
@@ -79,6 +85,6 @@
 		}
 	};
 	
-	EXIFyGlobal.init();
+	var exifyglobal = new EXIFyGlobal();
 	
 </script>
