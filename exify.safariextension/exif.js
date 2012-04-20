@@ -9,7 +9,7 @@ var EXIF = {};
 
 (function() {
 
-var bDebug = false;
+var bDebug = true;
 
 EXIF.Tags = {
 
@@ -88,6 +88,9 @@ EXIF.Tags = {
 };
 
 EXIF.TiffTags = {
+	0x829A : "ExposureTime",		// Exposure time (in seconds)
+	0x013c : "HostComputer",
+
 	0x0100 : "ImageWidth",
 	0x0101 : "ImageHeight",
 	0x8769 : "ExifIFDPointer",
@@ -295,31 +298,10 @@ EXIF.StringValues = {
 	}
 }
 
-function addEvent(oElement, strEvent, fncHandler) 
-{
-	if (oElement.addEventListener) { 
-		oElement.addEventListener(strEvent, fncHandler, false); 
-	} else if (oElement.attachEvent) { 
-		oElement.attachEvent("on" + strEvent, fncHandler); 
-	}
-}
-
 
 function imageHasData(oImg) 
 {
 	return !!(oImg.exifdata);
-}
-
-function getImageData(oImg, fncCallback) 
-{
-	BinaryAjax(
-		oImg.src,
-		function(oHTTP) {
-			var oEXIF = findEXIFinJPEG(oHTTP.binaryResponse);
-			oImg.exifdata = oEXIF || {};
-			if (fncCallback) fncCallback();
-		}
-	)
 }
 
 function findEXIFinJPEG(oFile) {
@@ -370,6 +352,8 @@ function readTags(oFile, iTIFFStart, iDirStart, oStrings, bBigEnd)
 		var strTag = oStrings[oFile.getShortAt(iEntryOffset, bBigEnd)];
 		if (!strTag && bDebug) console.log("Unknown tag: " + oFile.getShortAt(iEntryOffset, bBigEnd));
 		oTags[strTag] = readTagValue(oFile, iEntryOffset, iTIFFStart, iDirStart, bBigEnd);
+		
+		console.log(oFile.getShortAt(iEntryOffset, bBigEnd) + ': ' + strTag + ': ' + oTags[strTag]);
 	}
 	return oTags;
 }
@@ -492,10 +476,12 @@ function readEXIFData(oFile, iStart, iLength)
 		if (bDebug) console.log("Not valid TIFF data! (First offset not 8)", oFile.getShortAt(iTIFFOffset+4, bBigEnd));
 		return false;
 	}
-
+	
+	console.log('tiff tags');
 	var oTags = readTags(oFile, iTIFFOffset, iTIFFOffset+8, EXIF.TiffTags, bBigEnd);
 
 	if (oTags.ExifIFDPointer) {
+		console.log('other tags');
 		var oEXIFTags = readTags(oFile, iTIFFOffset, iTIFFOffset + oTags.ExifIFDPointer, EXIF.Tags, bBigEnd);
 		for (var strTag in oEXIFTags) {
 			switch (strTag) {
@@ -553,17 +539,6 @@ function readEXIFData(oFile, iStart, iLength)
 }
 
 
-EXIF.getData = function(oImg, fncCallback) 
-{
-	if (!oImg.complete) return false;
-	if (!imageHasData(oImg)) {
-		getImageData(oImg, fncCallback);
-	} else {
-		if (fncCallback) fncCallback();
-	}
-	return true;
-}
-
 EXIF.getTag = function(oImg, strTag) 
 {
 	if (!imageHasData(oImg)) return;
@@ -583,47 +558,10 @@ EXIF.getAllTags = function(oImg)
 	return oAllTags;
 }
 
-
-EXIF.pretty = function(oImg) 
-{
-	if (!imageHasData(oImg)) return "";
-	var oData = oImg.exifdata;
-	var strPretty = "";
-	for (var a in oData) {
-		if (oData.hasOwnProperty(a)) {
-			if (typeof oData[a] == "object") {
-				strPretty += a + " : [" + oData[a].length + " values]\r\n";
-			} else {
-				strPretty += a + " : " + oData[a] + "\r\n";
-			}
-		}
-	}
-	return strPretty;
-}
-
 EXIF.readFromBinaryFile = function(oFile) {
 	return findEXIFinJPEG(oFile);
 }
 
-function loadAllImages() 
-{
-	var aImages = document.getElementsByTagName("img");
-	for (var i=0;i<aImages.length;i++) {
-		if (aImages[i].getAttribute("exif") == "true") {
-			if (!aImages[i].complete) {
-				addEvent(aImages[i], "load", 
-					function() {
-						EXIF.getData(this);
-					}
-				); 
-			} else {
-				EXIF.getData(aImages[i]);
-			}
-		}
-	}
-}
-
-addEvent(window, "load", loadAllImages); 
 
 })();
 

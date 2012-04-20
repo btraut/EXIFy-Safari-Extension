@@ -137,6 +137,8 @@ EXIFy.prototype = {
 		
 		$ul.html('');
 		
+		console.log(tags);
+		
 		for (var key in tags) {
 			tags[key] = $.trim(tags[key]);
 			
