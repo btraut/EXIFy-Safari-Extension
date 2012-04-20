@@ -8,4 +8,6 @@ EXIFy is the easiest way to view EXIF data for jpeg and png images in Safari. It
 
 This repo includes both the extension source code and the built version. To modify and build your own, you must have a Safari Developer account and a valid Extension certificate.
 
+Internally, EXIFy uses exif.js and binaryajax.js. These libraries are Copyright (c) 2008 Jacob Seidelin, cupboy@gmail.com, http://blog.nihilogic.dk/.
+
 EXIFy is released under the MIT license.
